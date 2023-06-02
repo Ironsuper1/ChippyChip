@@ -1,0 +1,9 @@
+# Ignore build output files
+/obj_dir/
+
+# Ignore Executable/Misc
+run
+
+# Ignore log files
+*.log
+netlist_out.json
