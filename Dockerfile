@@ -15,9 +15,9 @@ RUN apt-get update && \
 WORKDIR /app
 
 # Copy the Verilog source files and the Makefile to the container
-COPY src /app/src
-COPY testbench.cpp /app/testbench.cpp
-COPY Makefile /app/Makefile
+# COPY src /app/src
+# COPY testbench.cpp /app/testbench.cpp
+# COPY Makefile /app/Makefile
 
 # Run the make command
 CMD ["make"]
