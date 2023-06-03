@@ -20,4 +20,4 @@ WORKDIR /app
 # COPY Makefile /app/Makefile
 
 # Run the make command
-CMD ["make"]
+ENTRYPOINT ["bash"]
