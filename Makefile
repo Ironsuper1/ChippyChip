@@ -8,6 +8,7 @@ VERILATOR_FLAGS = --cc
 EXECUTABLE = sim
 OBJ_DIR = obj_dir
 
+
 # Yosys synthesis variables
 SYNTH_VERILOG_SRC = src/processor.v
 TARGET_MODULE = processor
@@ -19,11 +20,11 @@ all: $(EXECUTABLE) $(OUTPUT_NETLIST)
 
 # Target to build the Verilator simulation executable
 $(EXECUTABLE): $(OBJ_DIR)/$(VERILOG_TB).o
-#$(MAKE) -C $(OBJ_DIR) -f V$(VERILOG_TB).mk
+	$(MAKE) -C $(OBJ_DIR) -f V$(TARGET_MODULE).mk
 
 $(OBJ_DIR)/$(VERILOG_TB).o: $(VERILOG_SRC_FOLDER)/*.v $(VERILOG_TB)
 	$(VERILATOR) $(VERILATOR_FLAGS) -y $(VERILOG_SRC_FOLDER) -I$(VERILOG_SRC_FOLDER) --cc $(VERILOG_TB) $(VERILOG_SRC_FOLDER)/*.v
-# $(MAKE) -C $(OBJ_DIR) -f V$(VERILOG_TB).mk
+	$(MAKE) -C $(OBJ_DIR) -f V$(TARGET_MODULE).mk
 
 # Target to perform Yosys synthesis
 $(OUTPUT_NETLIST): $(SYNTH_VERILOG_SRC)
