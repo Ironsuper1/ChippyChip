@@ -1,4 +1,4 @@
-'define width 32
+`define WIDTH 32
 
 module processor;
 
@@ -7,8 +7,8 @@ module processor;
   reg [15:0] value_in = "12";
   reg [4:0] result;
   reg mux_result;
-
-  prog_count p1 (clk, rst, en);
+  reg m2_Res;
+  prog_count p1 (clk, rst, en, m2_Res);
   assign result = instruction[5:1] & value_in[5:1];
   mux one (clk, rst, result[0], en, mux_result);
 endmodule;
@@ -20,13 +20,15 @@ module prog_count (
   input en,
   output pc
 );
+  parameter width = `WIDTH;
   reg [width-1:0] Q;
-  always @ (posedge rst, posedge clk)
-    if (rst)
+  always @ (posedge rst, posedge clk) begin
+    if (rst) begin
       Q <= 0;
-    else if (en)
+    end else if (en) begin
       Q <= Q + 1;
-
+    end
+  end
 endmodule;
 
 module ins_mem (
@@ -36,14 +38,20 @@ module ins_mem (
   output ins
 );
   reg[width-1:0] imem[width-1:0];
-  reg[width-1:0] count := "0";
-  always @ (posedge rst, posedge clk)
-    if (rst) 
+  reg[width-1:0] count;
+  initial begin
+    
+    count = 32'h0000;
+  end 
+  always @ (posedge rst, posedge clk) begin
+    if (rst) begin
       imem[0] <= "1";
-      count <= "0";
-    else
+      count = 32'b0;
+    end else begin
       count <= count + 1;
       ins <= imem[count];
+    end
+  end
 endmodule;
 
 module registers (
@@ -64,14 +72,17 @@ module registers (
   integer wri = wr;
   integer wdi = wd;
 
-  always @ (posedge rst, posedge clk)
-    if (rst)
+  always @ (posedge rst, posedge clk) begin
+    if (rst) begin
       //rst
-    else if (rw)
+    
+    end else if (rw) begin
       // rw
-    else
+    end else begin
       rd1 <= cpu_reg[rr1i];
       rd <= cpu_reg[rr2i];
+    end
+  end
 
 endmodule;
 
@@ -86,30 +97,33 @@ module alu (
 );
   reg [width-1:0] temp;
 
-  always @ (posedge rst, posedge clk)
-    if (rst)
+  always @ (posedge rst, posedge clk) begin
+    if (rst) begin
       zero <= "0";
-    else if (control)
+    end else if (control) begin
       temp <= first + second;
-      if (temp < first)
-        zero <= "1";
+      if (temp < first) begin
+        zero = 1'b1;
+      end
       val <= temp;
+    end
+  end
 
 
 endmodule;
 
-module data_mem (
-  input clk,
-  input rst,
-  input addr,
-  input wd,
-  input mw,
-  input mr,
-  output rd
-);
+// module data_mem (
+//   input clk,
+//   input rst,
+//   input addr,
+//   input wd,
+//   input mw,
+//   input mr,
+//   output rd
+// );
 
-  always (posedge rst, posedge clk)
+//   always (posedge rst, posedge clk)
     
 
 
-endmodule;
+// endmodule;
