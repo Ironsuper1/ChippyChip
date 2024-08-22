@@ -43,36 +43,23 @@ class Decode(width:UInt) extends Module {
         "b1100011".U(7.W) -> 4.U(3.W),
         "b1101111".U(7.W) -> 5.U(3.W)
     ))
-    
-    // switch (opcode) {
-    //     is("b0110011".U(7.W)) {     // R-Type
-
-    //     }
-    //     is("b0010011".U(7.W)) {     // I-Type
-            
-    //     }
-    //     is("b0100011".U(7.W)) {     // S-Type
-            
-    //     }
-    //     is("b0110111".U(7.W) | "b0010111".U(7.W)) {     // U-Type
-            
-    //     }
-    //     is("b1100011".U(7.W)) {     // B-Type
-            
-    //     }
-    //     is("b1101111".U(7.W)) {     // J-Type
-            
-    //     }
-    // }
 }
 // Execute
 class Execute(width:UInt) extends Module {
     val io = IO(new Bundle {
         val reg1_in = Input(width)
         val reg2_in = Input(width)
+        val op = Input(UInt(4.W))
         val alu_result = Output(width)
     })
 
+
+    io.alu_result := MuxLookup(io.op, 0.U(32.W))(Seq(
+        0.U(4.W) -> (io.reg1_in + io.reg2_in),
+        1.U(4.W) -> (io.reg1_in - io.reg2_in),
+        2.U(4.W) -> (io.reg1_in * io.reg2_in),
+        3.U(4.W) -> (io.reg1_in / io.reg2_in)
+    ))
 }
 // Mem
 class dataMem(width:UInt) extends Module {
@@ -80,6 +67,8 @@ class dataMem(width:UInt) extends Module {
         val alu_result = Input(width)
         val mem_data = Output(width)
     })
+
+    val data_mem = Mem(1024, UInt(32.W)) // 4KB data memory
 
 }
 // WriteBack
@@ -92,7 +81,33 @@ class writeBack(width:UInt) extends Module {
 
 }
 
+class Controller(width:UInt) extends Module {
+    val io = IO(new Bundle {
+        val op = Input(UInt(3.W))
+        val funct3 = Input(UInt(4.W))
+        val funct7 = Input(UInt(7.W))
+    })
+    switch (io.op) {
+        is(0.U) {     // R-Type
 
+        }
+        is(1.U) {     // I-Type
+            
+        }
+        is(2.U) {     // S-Type
+            
+        }
+        is(3.U) {     // U-Type
+            
+        }
+        is(4.U) {     // B-Type
+            
+        }
+        is(5.U) {     // J-Type
+            
+        }
+    }
+}
 
 class Orion_Core extends Module {
     val io = IO(new Bundle {
@@ -104,7 +119,8 @@ class Orion_Core extends Module {
     val ins_mem = Mem(1024, UInt(32.W)) // 4KB instruction memory
     val pc = RegInit(0.U(32.W))
     
-
+    
+    val controller = Module(new Controller(width))
     val fetch = Module(new Fetch(width))
     val decode = Module(new Decode(width))
     val execute = Module(new Execute(width))
@@ -115,9 +131,14 @@ class Orion_Core extends Module {
     // Link
     fetch.io.pc_in := pc
     decode.io.ins_in := fetch.io.ins_out
+
+    controller.io.op := decode.io.type_out
+    
     execute.io.reg1_in := decode.io.reg1_out
     execute.io.reg2_in := decode.io.reg2_out
+    
     mem.io.alu_result := execute.io.alu_result
+    
     writeback.io.mem_data := mem.io.mem_data
     writeback.io.rd_in := decode.io.rd_out
     // PC Increment
@@ -127,23 +148,4 @@ class Orion_Core extends Module {
 }
 
 
-
-class ALU (bitWidth: Int) {
-    val io = IO(new Bundle {
-        val x = Input(UInt(bitWidth.W))
-        val y = Input(UInt(bitWidth.W))
-        val op = Input(UInt(4.W))
-        val out = Output(UInt());
-    })
-
-    if (io.op == 0) {
-        io.out := io.x+io.y
-    } else if (io.op == 1) {
-        io.out := io.x-io.y
-    } else if (io.op == 2) {
-        io.out := io.x*io.y
-    } else if (io.op == 3) {
-        io.out := io.x/io.y
-    }
-}
 
