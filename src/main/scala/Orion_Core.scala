@@ -49,16 +49,40 @@ class Execute(width:UInt) extends Module {
     val io = IO(new Bundle {
         val reg1_in = Input(width)
         val reg2_in = Input(width)
-        val op = Input(UInt(4.W))
+        val imm_in = Input(width)
+        val op = Input(UInt(5.W))
         val alu_result = Output(width)
     })
 
 
     io.alu_result := MuxLookup(io.op, 0.U(32.W))(Seq(
-        0.U(4.W) -> (io.reg1_in + io.reg2_in),
-        1.U(4.W) -> (io.reg1_in - io.reg2_in),
-        2.U(4.W) -> (io.reg1_in * io.reg2_in),
-        3.U(4.W) -> (io.reg1_in / io.reg2_in)
+        // R
+        0.U(5.W) -> (io.reg1_in + io.reg2_in),
+        1.U(5.W) -> (io.reg1_in - io.reg2_in),
+        2.U(5.W) -> (io.reg1_in * io.reg2_in),
+        3.U(5.W) -> (io.reg1_in / io.reg2_in),
+        4.U(5.W) -> (io.reg1_in xorR io.reg2_in),
+        5.U(5.W) -> (io.reg1_in orR io.reg2_in),
+        6.U(5.W) -> (io.reg1_in andR io.reg2_in),
+        7.U(5.W) -> (io.reg1_in << io.reg2_in),
+        8.U(5.W) -> (io.reg1_in >> io.reg2_in),
+        9.U(5.W) -> (io.reg1_in >> io.reg2_in), // MSD Extends?
+        10.U(5.W) -> (io.reg1_in < io.reg2_in),
+        11.U(5.W) -> (io.reg1_in < io.reg2_in), // Zero Extends?
+        // I
+        12.U(5.W) -> (io.reg1_in + io.imm_in),
+        13.U(5.W) -> (io.reg1_in xorR io.imm_in),
+        14.U(5.W) -> (io.reg1_in orR io.imm_in),
+        15.U(5.W) -> (io.reg1_in andR io.imm_in),
+        16.U(5.W) -> (io.reg1_in << io.imm_in),
+        17.U(5.W) -> (io.reg1_in >> io.imm_in),
+        18.U(5.W) -> (io.reg1_in >> io.imm_in), // MSB Extends?
+        19.U(5.W) -> (io.reg1_in < io.imm_in),
+        20.U(5.W) -> (io.reg1_in < io.imm_in),   // Zero Extends?
+
+        // I/S, Load/Store Addr Calc
+        21.U(5.W) -> (io.reg1_in + io.imm_in), // byte(8bit), half(16bit), word(32bit)
+        22.U(5.W) -> (io.reg1_in + io.imm_in), // byte, half -> Zero-Extends? Maybe replace 22,21 with addi
     ))
 }
 // Mem
