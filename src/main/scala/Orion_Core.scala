@@ -107,13 +107,41 @@ class writeBack(width:UInt) extends Module {
 
 class Controller(width:UInt) extends Module {
     val io = IO(new Bundle {
-        val op = Input(UInt(3.W))
+        val op_in = Input(UInt(3.W))
         val funct3 = Input(UInt(4.W))
         val funct7 = Input(UInt(7.W))
+        val op_out = Output(UInt(5.W))
     })
-    switch (io.op) {
+    switch (io.op_in) {
         is(0.U) {     // R-Type
-
+            switch (io.funct7) {
+                is(0.U(7.W)) {
+                    if (io.funct3 == 0.U(4.W)) {
+                        io.op_out := 0.U(5.W)
+                    } else if (io.funct3 == 1.U(4.W)) {
+                        io.op_out := 7.U(5.W)
+                    } else if (io.funct3 == 2.U(4.W)) {
+                        io.op_out := 10.U(5.W)
+                    } else if (io.funct3 == 3.U(4.W)) {
+                        io.op_out := 11.U(5.W)
+                    } else if (io.funct3 == 4.U(4.W)) {
+                        io.op_out := 4.U(5.W)
+                    } else if (io.funct3 == 5.U(4.W)) {
+                        io.op_out := 8.U(5.W)
+                    } else if (io.funct3 == 6.U(4.W)) {
+                        io.op_out := 5.U(5.W)
+                    } else if (io.funct3 == 7.U(4.W)) {
+                        io.op_out := 6.U(5.W)
+                    }
+                }
+                is(32.U(7.W)) {
+                    if (io.funct3 == 0.U(4.W)) {
+                        io.op_out := 1.U(5.W)
+                    } else {
+                        io.op_out := 9.U(5.W)
+                    }
+                }
+            }
         }
         is(1.U) {     // I-Type
             
@@ -156,7 +184,7 @@ class Orion_Core extends Module {
     fetch.io.pc_in := pc
     decode.io.ins_in := fetch.io.ins_out
 
-    controller.io.op := decode.io.type_out
+    controller.io.op_in := decode.io.type_out
     
     execute.io.reg1_in := decode.io.reg1_out
     execute.io.reg2_in := decode.io.reg2_out
