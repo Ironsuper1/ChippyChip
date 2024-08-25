@@ -1,7 +1,7 @@
 # ChippyChip
 
 #### Currently using the Chisel Language
-#### Progression: RV32I -> RV64I -> FP Support -> Out-Of-Order -> Superscalar
+#### Progression: RV32I -> RV64I -> FP Support -> Superscalar -> Out-Of-Order
 
 
 #### TODO: Add to testbench

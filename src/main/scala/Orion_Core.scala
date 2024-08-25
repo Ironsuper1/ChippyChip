@@ -18,7 +18,7 @@ class Execute(width:UInt) extends Module {
         val pc_branch = Output(width)       // to PC Mux
     })
 
-    val val_pick = UInt(4.W)
+    val val_pick = Wire(UInt(4.W))
     if (io.regcmd_in == true.B) {
         val_pick := io.reg2_in
     } else {
@@ -97,6 +97,8 @@ class Controller(width:UInt) extends Module {
     io.read_mem := false.B
     io.regcmd_out := false.B
     io.branch_enable := false.B
+    io.op_out := 0.U
+    io.wb_out := false.B
     def mapFunct3Op(funct3:UInt, default:UInt):UInt = {
         MuxLookup(funct3, default)(Seq(
             0.U -> 0.U(5.W),
@@ -154,7 +156,7 @@ class Controller(width:UInt) extends Module {
 
 class Orion_Core extends Module {
     val io = IO(new Bundle {
-        
+        val oup = Output(UInt(32.W))
     })
 
     val width = UInt(32.W)  // Define Width
@@ -213,8 +215,14 @@ class Orion_Core extends Module {
 
 
     // PC Increment
-    pc := Mux(controller.io.branch_enable && (execute.io.alu_result).asBool, execute.io.pc_branch, pc + 4.U)
+    pc := Mux(controller.io.branch_enable && (execute.io.alu_result(0)).asBool, execute.io.pc_branch, pc + 4.U)
 
     // RegFile update / Writeback
     reg_file(rd) := Mux(controller.io.wb_out, execute.io.alu_result, mem.io.mem_data)
+    io.oup := reg_file(0)
+}
+
+// Generate Verilog
+object OCore extends App {
+    emitVerilog(new Orion_Core())
 }
