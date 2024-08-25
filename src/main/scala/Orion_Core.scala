@@ -31,9 +31,9 @@ class Execute(width:UInt) extends Module {
         1.U(5.W) -> (io.reg1_in - val_pick),
         2.U(5.W) -> (io.reg1_in * val_pick),
         3.U(5.W) -> (io.reg1_in / val_pick),
-        4.U(5.W) -> (io.reg1_in xorR val_pick),
-        5.U(5.W) -> (io.reg1_in orR val_pick),
-        6.U(5.W) -> (io.reg1_in andR val_pick),
+        4.U(5.W) -> (io.reg1_in ^ val_pick),
+        5.U(5.W) -> (io.reg1_in | val_pick),
+        6.U(5.W) -> (io.reg1_in & val_pick),
         7.U(5.W) -> (io.reg1_in << val_pick),
         8.U(5.W) -> (io.reg1_in >> val_pick),
         9.U(5.W) -> (io.reg1_in >> val_pick), // MSD Extends?
