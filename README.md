@@ -1,4 +1,6 @@
-# ChippyChip
+# ChippyChip V2
+
+##### Remake of ChippyChip in Chisel HDL instead of Verilog
 
 #### Currently using the Chisel Language
 #### Progression: RV32I -> RV64I -> FP Support -> Superscalar -> Out-Of-Order
