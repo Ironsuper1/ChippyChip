@@ -92,6 +92,7 @@ class Controller(width:UInt) extends Module {
         val branch_enable = Output(Bool())      // Branch Check
         val op_out = Output(UInt(5.W))          // ALU -> Execute Stage
         val wb_out = Output(Bool())
+        val src = Output(Bool())
     })
     io.write_mem := false.B
     io.read_mem := false.B
@@ -99,6 +100,7 @@ class Controller(width:UInt) extends Module {
     io.branch_enable := false.B
     io.op_out := 0.U
     io.wb_out := false.B
+    io.src := false.B
     def mapFunct3Op(funct3:UInt, default:UInt):UInt = {
         MuxLookup(funct3, default)(Seq(
             0.U -> 0.U(5.W),
@@ -127,19 +129,24 @@ class Controller(width:UInt) extends Module {
         is(0.U) {     // R-Type
             io.regcmd_out := true.B
             io.op_out := Mux(io.funct7 === 0.U, mapFunct3Op(io.funct3, 0.U), Mux(io.funct3 === 0.U, 1.U, 9.U))
+            io.wb_out := true.B
         }
         is(1.U) {     // I-Type
             // regcmd_out false
             io.op_out := mapFunct3Op(io.funct3, 0.U)
+            io.wb_out := true.B
         }
         is(2.U) {     // I-Type (load)
             io.read_mem := true.B
+            io.wb_out := true.B
         }
         is(3.U) {     // S-Type
             io.write_mem := true.B
         }
         is(4.U) {     // U-Type
-            
+            // regcmd_out false
+            // wb_out is false (write from memory to regfile)
+            io.op_out := 7.U
         }
         is(5.U) {     // U-Type
             
@@ -148,8 +155,8 @@ class Controller(width:UInt) extends Module {
             io.branch_enable := true.B
             io.op_out := mapFunct3Branch(io.funct3, 0.U)
         }
-        is(7.U) {     // J-Type
-
+        is(7.U) {     // Jump/Jump&Reg
+            io.src := true.B
         }
     }
 }
@@ -202,7 +209,7 @@ class Orion_Core extends Module {
     // Execute inputs
     execute.io.reg1_in := reg1
     execute.io.reg2_in := reg2
-    execute.io.imm_in := imm
+    execute.io.imm_in := Mux(ins_type === 4.U, 12.U, imm)
     execute.io.op := controller.io.op_out
     execute.io.regcmd_in := controller.io.regcmd_out
     execute.io.pc_in := pc
@@ -217,8 +224,8 @@ class Orion_Core extends Module {
     // PC Increment
     pc := Mux(controller.io.branch_enable && (execute.io.alu_result(0)).asBool, execute.io.pc_branch, pc + 4.U)
 
-    // RegFile update / Writeback
-    reg_file(rd) := Mux(controller.io.wb_out, execute.io.alu_result, mem.io.mem_data)
+    // RegFile update / Writeback (either PC+4, alu_result, Mem_data load)
+    reg_file(rd) := Mux(controller.io.src, pc, Mux(controller.io.wb_out, execute.io.alu_result, mem.io.mem_data))
     io.oup := reg_file(0)
 }
 
